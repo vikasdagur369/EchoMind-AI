@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
-app.use("api/user", userRouter);
+app.use("/api/user", userRouter);
 
 app.listen(port, () => {
   connectDb();

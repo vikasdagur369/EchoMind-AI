@@ -7,12 +7,12 @@ import axios from "axios";
 const SignUp = () => {
   const navigate = useNavigate();
 
-  const { serverUrl } = useContext(userDataContext);
+  const { serverUrl, userData, setUserData } = useContext(userDataContext);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
   const handleSignUp = async (e) => {
@@ -28,10 +28,12 @@ const SignUp = () => {
         },
         { withCredentials: true }
       );
-      setLoading(true);
-      console.log(result.config.data);
+      setUserData(result.data);
+      setLoading(false);
+      navigate("/customize");
     } catch (error) {
       console.log(`signup error ${error}`);
+      setUserData(null);
       setErr(error.response.data.message);
       setLoading(false);
     }

@@ -43,8 +43,7 @@ export const signUp = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const user = User.findOne(email);
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).json({ message: "User does't exists!" });
@@ -56,7 +55,9 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Incorrect password!" });
     }
 
+
     const token = await genToken(user._id);
+
 
     res.cookie("token", token, {
       httpOnly: true,

@@ -7,7 +7,7 @@ import axios from "axios";
 const SignIn = () => {
   const navigate = useNavigate();
 
-  const { serverUrl } = useContext(userDataContext);
+  const { serverUrl, userData, setUserData } = useContext(userDataContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,8 +29,11 @@ const SignIn = () => {
         { withCredentials: true }
       );
       console.log(result);
+      setUserData(result.data);
       setLoading(false);
+      navigate('/')
     } catch (error) {
+      setUserData(null);
       console.log(`signin error ${error}`);
       setLoading(false);
 
@@ -77,7 +80,7 @@ const SignIn = () => {
           className="mt-5 min-w-[150px] h-[60px] bg-white rounded-full text-black font-semibold"
           disabled={loading}
         >
-          {loading?"Loading...":"SignIn"}
+          {loading ? "Loading..." : "SignIn"}
         </button>
         <p
           className="text-white text-[18px] cursor-pointer"

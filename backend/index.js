@@ -25,6 +25,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 
 app.listen(port, () => {
-  connectDb();
+   connectDb();
   console.log(`port is listening at ${port}`);
 });

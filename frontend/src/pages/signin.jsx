@@ -28,10 +28,10 @@ const SignIn = () => {
         },
         { withCredentials: true }
       );
-      console.log(result);
+      console.log("result : ", result);
       setUserData(result.data);
       setLoading(false);
-      navigate('/')
+      navigate("/");
     } catch (error) {
       setUserData(null);
       console.log(`signin error ${error}`);

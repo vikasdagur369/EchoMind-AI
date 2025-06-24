@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-
+import geminiResponse from "../gemini.js";
 export const getCurrentUser = async (req, res) => {
   try {
     const userId = req.userId;
@@ -34,5 +34,18 @@ export const updateAssistant = async (req, res) => {
     return res.status(200).json(user);
   } catch (error) {
     console.log("updateassitantUser : ", error);
+  }
+};
+
+export const askToAssistant = async (req, res) => {
+  try {
+    const { command } = req.body;
+    const user = await User.findById(req.userId);
+    const userName = user.name;
+    const assistantName = user.assistantName;
+
+    const result = await geminiResponse();
+  } catch (error) {
+    console.log(error);
   }
 };

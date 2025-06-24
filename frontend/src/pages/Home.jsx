@@ -1,22 +1,38 @@
 import { useContext } from "react";
 import { userDataContext } from "../context/userContext";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Home = () => {
-  const { userData } = useContext(userDataContext);
+  const { userData, serverUrl, setUserData } = useContext(userDataContext);
 
   const navigate = useNavigate();
+
+  const handleLogOut = async () => {
+    try {
+      const result = await axios.get(`${serverUrl}/api/auth/logout`, {
+        withCredentials: true,
+      });
+      setUserData(null);
+      navigate("/signin");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="w-full h-[100vh] bg-gradient-to-t from-[black] to-[#020236] flex flex-col justify-center items-center p-[20px] gap-[15px]">
       <button
         type="submit"
         className="mt-5 min-w-[150px] h-[60px] bg-white font-bold rounded-full absolute top-[20px] right-[20px] cursor-pointer text-black"
+        onClick={handleLogOut}
       >
         Log out
       </button>
       <button
         type="submit"
-        className="mt-5 font-bold min-w-[150px] h-[60px] bg-white rounded-full absolute top-[100px] right-[20px] text-black  px-[20px] py-[20px]"
+        className="mt-5 font-bold min-w-[150px] h-[60px] bg-white rounded-full absolute top-[100px] right-[20px] text-black cursor-pointer px-[20px] py-[20px]"
+        onClick={() => navigate("/customize")}
       >
         Customize your Assistant
       </button>

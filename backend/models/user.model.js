@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    assitantName: {
+    assistantName: {
       type: String,
     },
     assistantImage: {

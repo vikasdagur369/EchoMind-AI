@@ -15,3 +15,24 @@ export const getCurrentUser = async (req, res) => {
     return res.status(400).json({ message: "Get current user error." });
   }
 };
+
+export const updateAssistant = async (req, res) => {
+  try {
+    const { assistantName, imageUrl } = req.body;
+    console.log(assistantName);
+    const assistantImage = imageUrl;
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        assistantName,
+        assistantImage,
+      },
+      { new: true }
+    ).select("-password");
+
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log("updateassitantUser : ", error);
+  }
+};

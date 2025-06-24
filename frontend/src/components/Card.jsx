@@ -6,7 +6,6 @@ const Card = ({ image }) => {
   const context = useContext(userDataContext);
 
   // Debug: Log context to verify values
-  console.log("Card Render - Context:", context);
 
   // Fallback if context is not provided
   if (!context) {
@@ -16,9 +15,7 @@ const Card = ({ image }) => {
 
   const { selectedImage, setSelectedImage } = context;
 
-  console.log("Card Render - Image:", image);
-  console.log("Card Render - SelectedImage:", selectedImage);
-  console.log("Card Render - Is Selected:", selectedImage === image);
+ 
 
   return (
     <div
@@ -29,7 +26,6 @@ const Card = ({ image }) => {
             : ""
         }`}
       onClick={() => {
-        console.log("Clicked image:", image);
         setSelectedImage(image);
       }}
     >

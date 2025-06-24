@@ -3,11 +3,13 @@ import SignUp from "./pages/signup";
 import SignIn from "./pages/signin";
 import Home from "./pages/Home";
 import Customize from "./pages/Customize";
+import Customize2 from "./pages/Customize2";
 import { useContext } from "react";
 import { userDataContext } from "./context/userContext";
 
 const App = () => {
   const { userData, setUserData } = useContext(userDataContext);
+  console.log(userData);
   return (
     <div>
       <Routes>
@@ -24,7 +26,7 @@ const App = () => {
 
         <Route
           path="/signup"
-          element={!userData ? <SignUp /> : <Navigate to={"/"} />}
+          element={!userData ? <SignUp /> : <Navigate to={"/customize"} />}
         />
         <Route
           path="/signin"
@@ -32,7 +34,11 @@ const App = () => {
         />
         <Route
           path="/customize"
-          element={userData ? <Customize /> : <Navigate to={"/signin"} />}
+          element={userData ? <Customize /> : <Navigate to={"/signup"} />}
+        />
+        <Route
+          path="/customize2"
+          element={userData ? <Customize2 /> : <Navigate to={"/signup"} />}
         />
       </Routes>
     </div>

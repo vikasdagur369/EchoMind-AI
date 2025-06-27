@@ -21,11 +21,81 @@ const Home = () => {
     }
   };
 
-  const speak=(text) => {
+  const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
-  }
+    window.speechSynthesis.speak(utterance);
+  };
 
-  
+  const handleCommand = (data) => {
+    const { type, userInput, response } = data;
+
+    if (type === "google-search") {
+      const query = encodeURIComponent(userInput);
+      window.open(`https://www.google.com/search?q=${query}`, "_blank");
+    }
+
+    if (type === "youtube-search") {
+      const query = encodeURIComponent(userInput);
+      window.open(
+        `https://www.youtube.com/results?search_query=${query}`,
+        "_blank"
+      );
+    }
+
+    if (type === "youtube-play") {
+      const query = encodeURIComponent(userInput);
+      window.open(
+        `https://www.youtube.com/results?search_query=${query}`,
+        "_blank"
+      );
+    }
+
+    if (type === "calculator-open") {
+      window.open("calculator://", "_blank"); // Note: Native calculator cannot be opened via URL, handle with OS APIs if needed
+    }
+
+    if (type === "instagram-open") {
+      window.open("https://www.instagram.com", "_blank");
+    }
+
+    if (type === "facebook-open") {
+      window.open("https://www.facebook.com", "_blank");
+    }
+
+    if (type === "weather-show") {
+      const query = encodeURIComponent(userInput || "weather");
+      window.open(`https://www.google.com/search?q=${query}`, "_blank");
+    }
+
+    if (type === "get-time") {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      speak(`The current time is ${timeString}`);
+    }
+
+    if (type === "get-date") {
+      const now = new Date();
+      const dateString = now.toLocaleDateString();
+      speak(`Today's date is ${dateString}`);
+    }
+
+    if (type === "get-day") {
+      const now = new Date();
+      const dayString = now.toLocaleDateString(undefined, { weekday: "long" });
+      speak(`Today is ${dayString}`);
+    }
+
+    if (type === "get-month") {
+      const now = new Date();
+      const monthString = now.toLocaleDateString(undefined, { month: "long" });
+      speak(`The current month is ${monthString}`);
+    }
+
+    // For "general", handle using your default TTS response:
+    if (type === "general") {
+      speak(response); // using your TTS function
+    }
+  };
 
   useEffect(() => {
     const SpeechRecognition =
@@ -44,6 +114,8 @@ const Home = () => {
             .includes(userData.assistantName.toLowerCase())
         ) {
           const data = await getGeminiResponse(transcript);
+          console.log(data);
+          handleCommand(data);
         }
       };
 

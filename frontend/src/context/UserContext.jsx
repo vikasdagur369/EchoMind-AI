@@ -20,6 +20,24 @@ const userContext = ({ children }) => {
     }
   };
 
+  const getGeminiResponse = async (command) => {
+    try {
+      console.log("hello everyone!");
+
+      const result = await axios.post(
+        `${serverUrl}/api/user/asktoassistant`,
+        { command },
+        { withCredentials: true }
+      );
+
+      console.log("result.data", result.data);
+
+      return result.data;
+    } catch (error) {
+      console.log("getGeminiResponse: ", error);
+    }
+  };
+
   useEffect(() => {
     handleCurrentUser();
   }, []);
@@ -31,6 +49,7 @@ const userContext = ({ children }) => {
     setUserData,
     selectedImage,
     setSelectedImage,
+    getGeminiResponse,
   };
 
   // Debug: Log context value

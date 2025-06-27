@@ -1,5 +1,5 @@
 import axios from "axios";
-const geminiResponse = async (command, assistantName) => {
+const geminiResponse = async (command, assistantName, userName) => {
   try {
     const apiUrl = process.env.GEMINI_URL;
 
@@ -11,7 +11,7 @@ Your task is to understand the user's natural language input and respond with a 
 
 {
   "type": "general" | "google_search" | "youtube_search" | "youtube_play" | "get_time" | "get_date" | "get_day" | "get_month" | "calculator_open" | "instagram_open" | "facebook_open" | "weather_show",
-  "userInput": "<original user input (remove your name if mentioned); for Google/YouTube searches, include only the search term>",
+  "userinput": "<original user input (remove your name if mentioned); for Google/YouTube searches, include only the search term>",
   "response": "<a short, spoken-style response to read out loud to the user>"
 }
 
@@ -43,7 +43,7 @@ Now your userInput:${command}`;
         {
           parts: [
             {
-              "text": prompt,
+              text: prompt,
             },
           ],
         },

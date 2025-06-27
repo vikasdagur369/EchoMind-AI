@@ -1,10 +1,11 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { userDataContext } from "../context/userContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Home = () => {
-  const { userData, serverUrl, setUserData } = useContext(userDataContext);
+  const { userData, serverUrl, setUserData, getGeminiResponse } =
+    useContext(userDataContext);
 
   const navigate = useNavigate();
 
@@ -19,6 +20,38 @@ const Home = () => {
       console.log(error);
     }
   };
+
+  const speak=(text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+  }
+
+  
+
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.lang = "en-US";
+      recognition.onresult = async (e) => {
+        const transcript = e.results[e.results.length - 1][0].transcript.trim();
+        console.log("heard :" + transcript);
+        if (
+          transcript
+            .toLowerCase()
+            .includes(userData.assistantName.toLowerCase())
+        ) {
+          const data = await getGeminiResponse(transcript);
+        }
+      };
+
+      recognition.start();
+    } else {
+      console.warn("SpeechRecognition is not supported in this browser.");
+    }
+  }, []);
 
   return (
     <div className="w-full h-[100vh] bg-gradient-to-t from-[black] to-[#020236] flex flex-col justify-center items-center p-[20px] gap-[15px]">

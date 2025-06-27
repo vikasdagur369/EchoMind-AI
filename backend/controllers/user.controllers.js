@@ -42,66 +42,94 @@ export const updateAssistant = async (req, res) => {
 export const askToAssistant = async (req, res) => {
   try {
     const { command } = req.body;
+
     const user = await User.findById(req.userId);
     const userName = user.name;
+
+    console.log("userName :", userName);
     const assistantName = user.assistantName;
 
-    const result = await geminiResponse(command, userName, assistantName);
+    const result = await geminiResponse(command, assistantName, userName);
+    console.log("Gemini raw output:", result);
 
-    const jsonMatch = result.match(/{[\s\s]*}/);
-    if (!jsonMatch) {
-      return res.status(400).json({ response: "Sorry, I can't understand." });
+    if (!result || typeof result !== "string") {
+      return res.status(400).json({ response: "Empty response from Gemini." });
     }
 
-    const gemResult = JSON.parse(jsonMatch[0]);
+    // Clean any markdown formatting like ```json or ``` at beginning/end
+    const cleanedOutput = result.replace(/```json|```/g, "").trim();
 
-    const type = gemResult.type;
+    let gemResult;
+
+    try {
+      // Try parsing directly
+      gemResult = JSON.parse(cleanedOutput);
+    } catch (err) {
+      // Try extracting a JSON block from messy string
+      const jsonMatch = cleanedOutput.match(/{[\s\S]+}/);
+      if (!jsonMatch) {
+        return res
+          .status(400)
+          .json({ response: "Sorry, I can't understand that." });
+      }
+
+      try {
+        gemResult = JSON.parse(jsonMatch[0]);
+      } catch (parseErr) {
+        return res
+          .status(400)
+          .json({ response: "Sorry, the response was invalid JSON." });
+      }
+    }
+
+    const { type, userInput, response: voiceResponse } = gemResult;
 
     switch (type) {
       case "get-date":
         return res.json({
           type,
-          userInput: gemResult.userInput,
-          response: `current date is ${moment().format("YYYY-MM-DD")}`,
+          userInput,
+          response: `Current date is ${moment().format("YYYY-MM-DD")}`,
         });
       case "get-time":
         return res.json({
           type,
-          userInput: gemResult.userInput,
-          response: `current time is ${moment().format("hh:mm A")}`,
+          userInput,
+          response: `Current time is ${moment().format("hh:mm A")}`,
         });
       case "get-day":
         return res.json({
           type,
-          userInput: gemResult.userInput,
-          response: `today is ${moment().format("dddd")}`,
+          userInput,
+          response: `Today is ${moment().format("dddd")}`,
         });
       case "get-month":
         return res.json({
           type,
-          userInput: gemResult.userInput,
-          response: `current monthm is ${moment().format("MMMM")}`,
+          userInput,
+          response: `Current month is ${moment().format("MMMM")}`,
         });
       case "google_search":
       case "youtube_search":
+      case "youtube_play":
       case "general":
       case "calculator_open":
       case "instagram_open":
       case "facebook_open":
-      case "weather-show":
-      case "get-time":
+      case "weather_show":
         return res.json({
           type,
-          userInput: gemResult.userInput,
-          response: gemResult.userInput,
+          userInput,
+          response: voiceResponse || userInput,
         });
 
       default:
-        return res
-          .status(400)
-          .json({ response: "I did't understand that command." });
+        return res.status(400).json({
+          response: "I didn't understand that command.",
+        });
     }
   } catch (error) {
-    console.log(error);
+    console.error("askToAssistant error:", error);
+    res.status(500).json({ response: "Something went wrong on the server." });
   }
 };

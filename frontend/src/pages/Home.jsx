@@ -16,6 +16,7 @@ const Home = () => {
   const [aiText, setAiText] = useState("");
   const isSpeakingRef = useRef(false);
   const recognitionRef = useRef(null);
+  const isRecognizingRef = useRef(false);
 
   const synth = window.speechSynthesis;
 
@@ -32,22 +33,34 @@ const Home = () => {
   };
 
   const startRecognition = () => {
-    try {
-      recognitionRef.current?.start();
-      setListening(true);
-    } catch (error) {
-      if (!error.message.includes("start")) {
-        console.error("Recognition error:", error);
+    if (!isSpeakingRef.current && !isRecognizingRef.current) {
+      try {
+        recognitionRef.current?.start();
+        setListening(true);
+      } catch (error) {
+        if (!error.message.includes("start")) {
+          console.error("Recognition error:", error);
+        }
       }
     }
   };
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "hi-IN";
+    const voices = window.speechSynthesis.getVoices();
+    const hindiVoice = voices.find((v) => v.lang === "hi-IN");
+    if (hindiVoice) {
+      utterance.voice = hindiVoice;
+    }
     isSpeakingRef.current = true;
     utterance.onend = () => {
+      setAiText("");
       isSpeakingRef.current = false;
-      startRecognition();
+      setTimeout(() => {
+        startRecognition();
+      }, 800);
     };
+    synth.cancel();
     synth.speak(utterance);
   };
 
@@ -124,7 +137,7 @@ const Home = () => {
 
   useEffect(() => {
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition; 
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
@@ -132,8 +145,6 @@ const Home = () => {
       recognition.lang = "en-US";
 
       recognitionRef.current = recognition;
-
-      const isRecognizingRef = { current: false };
 
       const safeRecognition = () => {
         if (!isSpeakingRef.current && !isRecognizingRef.current) {
@@ -227,6 +238,10 @@ const Home = () => {
       </h1>
       {!aiText && <img src={userImg} className="w-[200px]" alt="" />}
       {aiText && <img src={ai} className="w-[200px]" alt="" />}
+
+      <h1 className="text-white text-[18px] ">
+        {userText ? userText : aiText ? aiText : null}
+      </h1>
     </div>
   );
 };

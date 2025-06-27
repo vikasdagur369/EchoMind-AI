@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { userDataContext } from "../context/userContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -8,6 +8,12 @@ const Home = () => {
     useContext(userDataContext);
 
   const navigate = useNavigate();
+
+  const [listening, setListening] = useState(false);
+  const isSpeakingRef = useRef(false);
+  const recognitionRef = useRef(null);
+
+  const synth = window.speechSynthesis;
 
   const handleLogOut = async () => {
     try {
@@ -23,7 +29,7 @@ const Home = () => {
 
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
+    synth.speak(utterance);
   };
 
   const handleCommand = (data) => {
@@ -105,21 +111,53 @@ const Home = () => {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.lang = "en-US";
+
+      recognitionRef.current = recognition;
+
+      const isRecognizingRef = { current: false };
+
+      const safeRecognition = () => {
+        if (!isSpeakingRef && !isRecognizingRef) {
+          try {
+            recognition.start();
+            console.log("Recognition requested to start!");
+          } catch (error) {
+            if (error.name !== "InvalidStateError") {
+              console.error("Start error :", error);
+            }
+          }
+        }
+      };
+
+      recognition.onstart = () => {
+        console.log("Recognition started");
+        isRecognizingRef.current = true;
+        setListening(true);
+      };
+
+      recognition.onend = () => {
+        console.log("Recognition ended!");
+        isRecognizingRef.current = false;
+        setListening(false);
+
+        if (!isSpeakingRef.current) {
+          setTimeout(() => {
+            safeRecognition();
+          }, 1000);
+        }
+      };
+
       recognition.onresult = async (e) => {
         const transcript = e.results[e.results.length - 1][0].transcript.trim();
-        console.log("heard :" + transcript);
         if (
           transcript
             .toLowerCase()
             .includes(userData.assistantName.toLowerCase())
         ) {
           const data = await getGeminiResponse(transcript);
-          console.log(data);
           handleCommand(data);
         }
       };
-
-      recognition.start();
     } else {
       console.warn("SpeechRecognition is not supported in this browser.");
     }

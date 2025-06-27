@@ -44,6 +44,8 @@ export const askToAssistant = async (req, res) => {
     const { command } = req.body;
 
     const user = await User.findById(req.userId);
+    user.history.push(command)
+    user.save()
     const userName = user.name;
 
     console.log("userName :", userName);
@@ -128,7 +130,7 @@ export const askToAssistant = async (req, res) => {
           response: "I didn't understand that command.",
         });
     }
-  } catch (error) {
+    } catch (error) {
     console.error("askToAssistant error:", error);
     res.status(500).json({ response: "Something went wrong on the server." });
   }

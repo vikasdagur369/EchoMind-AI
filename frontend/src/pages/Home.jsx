@@ -2,6 +2,8 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { userDataContext } from "../context/userContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import ai from "../assets/ai.gif";
+import userImg from "../assets/user.gif";
 
 const Home = () => {
   const { userData, serverUrl, setUserData, getGeminiResponse } =
@@ -10,6 +12,8 @@ const Home = () => {
   const navigate = useNavigate();
 
   const [listening, setListening] = useState(false);
+  const [userText, setUserText] = useState("");
+  const [aiText, setAiText] = useState("");
   const isSpeakingRef = useRef(false);
   const recognitionRef = useRef(null);
 
@@ -27,8 +31,23 @@ const Home = () => {
     }
   };
 
+  const startRecognition = () => {
+    try {
+      recognitionRef.current?.start();
+      setListening(true);
+    } catch (error) {
+      if (!error.message.includes("start")) {
+        console.error("Recognition error:", error);
+      }
+    }
+  };
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
+    isSpeakingRef.current = true;
+    utterance.onend = () => {
+      isSpeakingRef.current = false;
+      startRecognition();
+    };
     synth.speak(utterance);
   };
 
@@ -117,10 +136,9 @@ const Home = () => {
       const isRecognizingRef = { current: false };
 
       const safeRecognition = () => {
-        if (!isSpeakingRef && !isRecognizingRef) {
+        if (!isSpeakingRef.current && !isRecognizingRef.current) {
           try {
             recognition.start();
-            console.log("Recognition requested to start!");
           } catch (error) {
             if (error.name !== "InvalidStateError") {
               console.error("Start error :", error);
@@ -130,13 +148,11 @@ const Home = () => {
       };
 
       recognition.onstart = () => {
-        console.log("Recognition started");
         isRecognizingRef.current = true;
         setListening(true);
       };
 
       recognition.onend = () => {
-        console.log("Recognition ended!");
         isRecognizingRef.current = false;
         setListening(false);
 
@@ -154,9 +170,29 @@ const Home = () => {
             .toLowerCase()
             .includes(userData.assistantName.toLowerCase())
         ) {
+          setAiText("");
+          setUserText(transcript);
+          recognition.stop();
+          isRecognizingRef.current = false;
+          setListening(false);
           const data = await getGeminiResponse(transcript);
           handleCommand(data);
+          setAiText(data.response);
+          setUserText("");
         }
+      };
+
+      const fallback = setInterval(() => {
+        if (!isSpeakingRef.current && !isRecognizingRef.current) {
+          safeRecognition();
+        }
+      }, 10000);
+      safeRecognition();
+      return () => {
+        recognition.stop();
+        setListening(false);
+        isRecognizingRef.current = false;
+        clearInterval(fallback);
       };
     } else {
       console.warn("SpeechRecognition is not supported in this browser.");
@@ -189,6 +225,8 @@ const Home = () => {
       <h1 className="text-white text-[18px] font-bold">
         I'm {userData?.assistantName}
       </h1>
+      {!aiText && <img src={userImg} className="w-[200px]" alt="" />}
+      {aiText && <img src={ai} className="w-[200px]" alt="" />}
     </div>
   );
 };

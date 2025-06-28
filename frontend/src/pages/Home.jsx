@@ -8,7 +8,6 @@ import userImg from "../assets/user.gif";
 const Home = () => {
   const { userData, serverUrl, setUserData, getGeminiResponse } =
     useContext(userDataContext);
-
   const navigate = useNavigate();
 
   const [listening, setListening] = useState(false);
@@ -17,12 +16,13 @@ const Home = () => {
   const isSpeakingRef = useRef(false);
   const recognitionRef = useRef(null);
   const isRecognizingRef = useRef(false);
+  const greetedRef = useRef(false);
 
   const synth = window.speechSynthesis;
 
   const handleLogOut = async () => {
     try {
-      const result = await axios.get(`${serverUrl}/api/auth/logout`, {
+      await axios.get(`${serverUrl}/api/auth/logout`, {
         withCredentials: true,
       });
       setUserData(null);
@@ -44,10 +44,11 @@ const Home = () => {
       }
     }
   };
+
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "hi-IN";
-    const voices = window.speechSynthesis.getVoices();
+    const voices = synth.getVoices();
     const hindiVoice = voices.find((v) => v.lang === "hi-IN");
     if (hindiVoice) {
       utterance.voice = hindiVoice;
@@ -72,15 +73,7 @@ const Home = () => {
       window.open(`https://www.google.com/search?q=${query}`, "_blank");
     }
 
-    if (type === "youtube-search") {
-      const query = encodeURIComponent(userInput);
-      window.open(
-        `https://www.youtube.com/results?search_query=${query}`,
-        "_blank"
-      );
-    }
-
-    if (type === "youtube-play") {
+    if (type === "youtube-search" || type === "youtube-play") {
       const query = encodeURIComponent(userInput);
       window.open(
         `https://www.youtube.com/results?search_query=${query}`,
@@ -89,7 +82,7 @@ const Home = () => {
     }
 
     if (type === "calculator-open") {
-      window.open("calculator://", "_blank"); // Note: Native calculator cannot be opened via URL, handle with OS APIs if needed
+      window.open("calculator://", "_blank");
     }
 
     if (type === "instagram-open") {
@@ -107,43 +100,48 @@ const Home = () => {
 
     if (type === "get-time") {
       const now = new Date();
-      const timeString = now.toLocaleTimeString();
-      speak(`The current time is ${timeString}`);
+      speak(`The current time is ${now.toLocaleTimeString()}`);
     }
 
     if (type === "get-date") {
       const now = new Date();
-      const dateString = now.toLocaleDateString();
-      speak(`Today's date is ${dateString}`);
+      speak(`Today's date is ${now.toLocaleDateString()}`);
     }
 
     if (type === "get-day") {
       const now = new Date();
-      const dayString = now.toLocaleDateString(undefined, { weekday: "long" });
-      speak(`Today is ${dayString}`);
+      speak(
+        `Today is ${now.toLocaleDateString(undefined, { weekday: "long" })}`
+      );
     }
 
     if (type === "get-month") {
       const now = new Date();
-      const monthString = now.toLocaleDateString(undefined, { month: "long" });
-      speak(`The current month is ${monthString}`);
+      speak(
+        `The current month is ${now.toLocaleDateString(undefined, {
+          month: "long",
+        })}`
+      );
     }
 
-    // For "general", handle using your default TTS response:
     if (type === "general") {
-      speak(response); // using your TTS function
+      speak(response);
     }
   };
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
 
+    if (!SpeechRecognition) {
+      console.error("SpeechRecognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.lang = "en-US";
     recognition.interimResults = false;
-
     recognitionRef.current = recognition;
 
     let isMounted = true;
@@ -159,69 +157,70 @@ const Home = () => {
         }
       }
     }, 1000);
-    if (SpeechRecognition) {
-      recognition.onstart = () => {
-        isRecognizingRef.current = true;
-        setListening(true);
-      };
 
-      recognition.onend = () => {
-        isRecognizingRef.current = false;
-        setListening(false);
+    recognition.onstart = () => {
+      isRecognizingRef.current = true;
+      setListening(true);
+    };
 
-        if (isMounted && !isSpeakingRef.current) {
-          setTimeout(() => {
-            if (isMounted) {
-              try {
-                recognition.start();
-                console.log("Recoginition requested!");
-              } catch (error) {
-                if (error.name !== "InvalidStateError") {
-                  console.error("Start error :", error);
-                }
+    recognition.onend = () => {
+      isRecognizingRef.current = false;
+      setListening(false);
+      if (isMounted && !isSpeakingRef.current) {
+        setTimeout(() => {
+          if (isMounted) {
+            try {
+              recognition.start();
+              console.log("Recognition requested!");
+            } catch (error) {
+              if (error.name !== "InvalidStateError") {
+                console.error("Start error :", error);
               }
             }
-          }, 1000);
-        }
-      };
-      recognition.onerror = (event) => {
-        console.warn("Recognition error : ", event.error);
-        isRecognizingRef.current = false;
-        setListening(false);
-        if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
-          setTimeout(() => {
-            if (isMounted) {
-              try {
-                recognition.start();
-                console.log("Recognition restarted after error");
-              } catch (error) {
-                if (e.name !== "InvalidStateError") console.log(error);
+          }
+        }, 1000);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.warn("Recognition error: ", event.error);
+      isRecognizingRef.current = false;
+      setListening(false);
+      if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
+        setTimeout(() => {
+          if (isMounted) {
+            try {
+              recognition.start();
+              console.log("Recognition restarted after error");
+            } catch (error) {
+              if (error.name !== "InvalidStateError") {
+                console.error(error);
               }
             }
-          }, 1000);
-        }
-      };
+          }
+        }, 1000);
+      }
+    };
 
-      recognition.onresult = async (e) => {
-        const transcript = e.results[e.results.length - 1][0].transcript.trim();
-        if (
-          transcript
-            .toLowerCase()
-            .includes(userData.assistantName.toLowerCase())
-        ) {
-          setAiText("");
-          setUserText(transcript);
-          recognition.stop();
-          isRecognizingRef.current = false;
-          setListening(false);
-          const data = await getGeminiResponse(transcript);
-          handleCommand(data);
-          setAiText(data.response);
-          setUserText("");
-        }
-      };
+    recognition.onresult = async (e) => {
+      const transcript = e.results[e.results.length - 1][0].transcript.trim();
+      if (
+        transcript.toLowerCase().includes(userData.assistantName.toLowerCase())
+      ) {
+        setAiText("");
+        setUserText(transcript);
+        recognition.stop();
+        isRecognizingRef.current = false;
+        setListening(false);
+        const data = await getGeminiResponse(transcript);
+        handleCommand(data);
+        setAiText(data.response);
+        setUserText("");
+      }
+    };
 
-      window.speechSynthesis.onvoicechanged = () => {
+    const handleVoicesChanged = () => {
+      if (!greetedRef.current) {
         const greeting = new SpeechSynthesisUtterance(
           `Hello ${userData.name}, how can I help you?`
         );
@@ -229,50 +228,82 @@ const Home = () => {
         greeting.onend = () => {
           startTimeout();
         };
-        window.speechSynthesis.speak(greeting);
-      };
-      return () => {
-        isMounted = false;
-        clearTimeout(startTimeout);
-        recognition.stop();
-        setListening(false);
-        isRecognizingRef.current = false;
-      };
-    }
-  }, []);
+        synth.speak(greeting);
+        greetedRef.current = true; // speak only once
+      }
+    };
+
+    window.speechSynthesis.addEventListener(
+      "voiceschanged",
+      handleVoicesChanged
+    );
+
+    return () => {
+      isMounted = false;
+      clearTimeout(startTimeout);
+      recognition.stop();
+      setListening(false);
+      isRecognizingRef.current = false;
+      window.speechSynthesis.removeEventListener(
+        "voiceschanged",
+        handleVoicesChanged
+      );
+    };
+  }, [userData, getGeminiResponse]);
 
   return (
-    <div className="w-full h-[100vh] bg-gradient-to-t from-[black] to-[#020236] flex flex-col justify-center items-center p-[20px] gap-[15px]">
+    <div className="w-full min-h-screen bg-gradient-to-t from-black to-[#020236] flex flex-col items-center justify-center px-4 py-10 relative gap-4">
+      {/* Log Out Button */}
       <button
-        type="submit"
-        className="mt-5 min-w-[150px] h-[60px] bg-white font-bold rounded-full absolute top-[20px] right-[20px] cursor-pointer text-black"
         onClick={handleLogOut}
+        className="absolute top-5 right-5 w-32 h-12 rounded-full bg-gradient-to-r from-red-500 to-red-400 text-white font-semibold shadow-md hover:from-red-600 hover:to-red-500 transition"
       >
         Log out
       </button>
+
+      {/* Customize Button */}
       <button
-        type="submit"
-        className="mt-5 font-bold min-w-[150px] h-[60px] bg-white rounded-full absolute top-[100px] right-[20px] text-black cursor-pointer px-[20px] py-[20px]"
         onClick={() => navigate("/customize")}
+        className="absolute top-20 right-5 w-48 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-400 text-white font-semibold shadow-md hover:from-blue-600 hover:to-blue-500 transition"
       >
-        Customize your Assistant
+        Customize Assistant
       </button>
-      <div className="w-[300px] h-[400px] flex justify-center items-center overflow-hidden  rounded-4xl shadow-lg">
+
+      {/* Assistant Image */}
+      <div className="w-72 h-96 rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-black/40 backdrop-blur-md flex justify-center items-center">
         <img
           src={userData?.assistantImage}
-          alt=""
-          className="h-full object-cover "
+          alt="Assistant"
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
-      <h1 className="text-white text-[18px] font-bold">
+
+      {/* Assistant Name */}
+      <h1 className="text-white text-xl sm:text-2xl font-bold mt-4">
         I'm {userData?.assistantName}
       </h1>
-      {!aiText && <img src={userImg} className="w-[200px]" alt="" />}
-      {aiText && <img src={ai} className="w-[200px]" alt="" />}
 
-      <h1 className="text-white text-[18px] ">
-        {userText ? userText : aiText ? aiText : null}
-      </h1>
+      {/* Image Below Name */}
+      {!aiText ? (
+        <img
+          src={userImg}
+          alt="User Speaking"
+          className="w-48 sm:w-52 mt-4 rounded-2xl shadow-lg"
+        />
+      ) : (
+        <img
+          src={ai}
+          alt="AI Speaking"
+          className="w-48 sm:w-52 mt-4 rounded-2xl shadow-lg"
+        />
+      )}
+
+      {/* Text Display */}
+      {(userText || aiText) && (
+        <h2 className="text-white text-center text-lg sm:text-xl mt-4 px-4 max-w-md">
+          {userText ? userText : aiText}
+        </h2>
+      )}
     </div>
   );
 };

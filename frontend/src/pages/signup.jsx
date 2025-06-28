@@ -41,21 +41,21 @@ const SignUp = () => {
 
   return (
     <div
-      className="w-full h-[100vh] bg-cover flex justify-center item-center"
+      className="w-full min-h-screen bg-cover bg-center flex justify-center items-center px-4"
       style={{ backgroundImage: `url(${bg})` }}
     >
       <form
-        className="w-[90%] h-[600px] max-w-[500px] bg-[#00000096] backdrop-blur shadow-lg shadow-blue-950 flex flex-col items-center justify-center gap-[20px] p-5"
         onSubmit={handleSignUp}
+        className="w-full max-w-md bg-black/60 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 flex flex-col gap-5"
       >
-        <h1 className="text-white text-[30px] font-semibold mb-[30px]">
-          Register to <span className="text-blue-500">Virtual Assitance</span>
+        <h1 className="text-white text-2xl sm:text-3xl font-bold text-center">
+          Register to <span className="text-blue-400">Virtual Assistance</span>
         </h1>
 
         <input
           type="text"
           placeholder="Enter your name"
-          className=" px-2 py-2 w-full h-[60px] outline-none border-2 bg-transparent text-white border-white placeholder-grey-300 rounded-3xl text-[18px]"
+          className="w-full h-14 px-4 rounded-full bg-white/10 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           required
           onChange={(e) => setName(e.target.value)}
           value={name}
@@ -64,37 +64,39 @@ const SignUp = () => {
         <input
           type="email"
           placeholder="Enter your email"
-          className=" px-2 py-2 w-full h-[60px] outline-none border-2 bg-transparent text-white border-white placeholder-grey-300 rounded-3xl text-[18px]"
+          className="w-full h-14 px-4 rounded-full bg-white/10 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           required
           onChange={(e) => setEmail(e.target.value)}
           value={email}
         />
 
-        <div className="w-full h-[60px] rounded-full border-2 border-white bg-transparent text-white rouded-full text-[18px] relative">
-          <input
-            type="password"
-            placeholder="Enter your password"
-            className=" px-2 py-2 w-full h-[60px] outline-none bg-transparent  placeholder-grey-300  text-[18px]"
-            required
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-          />
-        </div>
+        <input
+          type="password"
+          placeholder="Enter your password"
+          className="w-full h-14 px-4 rounded-full bg-white/10 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          required
+          onChange={(e) => setPassword(e.target.value)}
+          value={password}
+        />
 
-        {err.length > 0 && <p className="text-red-500 text-[17px]">*{err}</p>}
+        {err.length > 0 && (
+          <p className="text-red-400 text-center text-sm">* {err}</p>
+        )}
+
         <button
           type="submit"
-          className="mt-5 min-w-[150px] h-[60px] bg-white rounded-full text-black font-semibold"
+          className="w-full h-14 rounded-full bg-gradient-to-r from-blue-500 to-blue-400 text-white font-semibold hover:from-blue-600 hover:to-blue-500 transition disabled:opacity-60 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? "Loading..." : "Sign Up"}
         </button>
+
         <p
-          className="text-white text-[18px] cursor-pointer"
+          className="text-white text-center text-sm sm:text-base cursor-pointer hover:underline"
           onClick={() => navigate("/signin")}
         >
           Already have an account?{" "}
-          <span className="text-blue-400">Sign-in</span>
+          <span className="text-blue-400 font-medium">Sign in</span>
         </p>
       </form>
     </div>

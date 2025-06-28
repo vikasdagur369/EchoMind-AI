@@ -14,9 +14,12 @@ const Customize = () => {
   const { selectedImage, setSelectedImage } = useContext(userDataContext);
   const navigate = useNavigate();
   return (
-    <div className="w-full h-[100vh] bg-gradient-to-t from-[black] to-[#020236] flex flex-col justify-center items-center p-[20px]">
-    <h1 className="text-white mb-[40px] text-[30px] text-center">select your <span className="text-blue-200">Assistant Image</span></h1>
-      <div className="w-[90%] max-w-[60%] flex justify-center items-center flex-wrap gap-[20px]">
+    <div className="w-full min-h-screen bg-gradient-to-t from-black to-[#020236] flex flex-col justify-center items-center px-4 py-10">
+      <h1 className="text-white text-2xl sm:text-3xl font-bold text-center mb-8">
+        Select your <span className="text-blue-300">Assistant Image</span>
+      </h1>
+
+      <div className="w-full max-w-4xl flex justify-center items-center flex-wrap gap-4 sm:gap-6">
         <Card image={image1} />
         <Card image={image2} />
         <Card image={image3} />
@@ -25,10 +28,11 @@ const Customize = () => {
         <Card image={image6} />
         <Card image={image7} />
       </div>
+
       {selectedImage && (
         <button
-          className="mt-5 min-w-[150px] h-[60px] bg-white rounded-full text-black font-semibold cursor-pointer"
           onClick={() => navigate("/customize2")}
+          className="mt-8 w-40 h-14 rounded-full bg-gradient-to-r from-blue-500 to-blue-400 text-white font-semibold hover:from-blue-600 hover:to-blue-500 transition"
         >
           Next
         </button>

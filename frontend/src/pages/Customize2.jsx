@@ -47,23 +47,30 @@ const Customize2 = () => {
   };
 
   return (
-    <div className="w-full h-[100vh] bg-gradient-to-t from-[black] to-[#020236] flex flex-col justify-center items-center">
-      <h1 className="text-white mb-[40px] text-[30px] text-center">
-        Enter your <span className="text-blue-200">Assistant Name</span>
+    <div className="w-full min-h-screen bg-gradient-to-t from-black to-[#020236] flex flex-col justify-center items-center px-4 py-10">
+      <h1 className="text-white text-2xl sm:text-3xl font-bold text-center mb-8">
+        Enter your <span className="text-blue-300">Assistant Name</span>
       </h1>
+
       <input
         type="text"
-        placeholder="e.g Jarvis"
-        className="px-2 py-2 w-full max-w-[600px] h-[60px] outline-none border-2 bg-transparent text-white border-white placeholder-grey-300 rounded-3xl text-[18px]"
+        placeholder="e.g., Jarvis"
+        className="w-full max-w-xl h-14 px-4 rounded-full bg-white/10 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
         onChange={(e) => setAssistantName(e.target.value)}
         value={assistantName}
         required
       />
-      {error && <p className="text-red-500 mt-2 text-[16px]">{error}</p>}
+
+      {error && (
+        <p className="text-red-400 mt-2 text-sm text-center max-w-sm">
+          {error}
+        </p>
+      )}
+
       {assistantName && (
         <button
-          className="mt-5 min-w-[300px] h-[60px] bg-white rounded-full text-black font-semibold cursor-pointer"
           onClick={handleUpdateAssistant}
+          className="mt-8 w-72 h-14 rounded-full bg-gradient-to-r from-blue-500 to-blue-400 text-white font-semibold hover:from-blue-600 hover:to-blue-500 transition"
         >
           Create your Assistant
         </button>

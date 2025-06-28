@@ -14,7 +14,7 @@ const port = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://echomind-ai-g6iv.onrender.com",
     credentials: true,
   })
 );

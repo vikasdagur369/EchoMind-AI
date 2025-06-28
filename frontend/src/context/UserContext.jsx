@@ -5,7 +5,7 @@ import axios from "axios";
 export const userDataContext = createContext(null); // Initialize with null for safety
 
 const userContext = ({ children }) => {
-  const serverUrl = "http://localhost:8000";
+  const serverUrl = "https://echomind-ai-backend.onrender.com";
   const [userData, setUserData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null); // Consistent naming
 

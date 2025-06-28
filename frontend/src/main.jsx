@@ -6,8 +6,8 @@ import userContext from "./context/userContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <UserContext>
+    <userContext>
       <App />
-    </UserContext>
+    </userContext>
   </BrowserRouter>
 );

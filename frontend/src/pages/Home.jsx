@@ -137,27 +137,29 @@ const Home = () => {
 
   useEffect(() => {
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition; 
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
 
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
 
-      recognitionRef.current = recognition;
+    recognitionRef.current = recognition;
 
-      const safeRecognition = () => {
-        if (!isSpeakingRef.current && !isRecognizingRef.current) {
-          try {
-            recognition.start();
-          } catch (error) {
-            if (error.name !== "InvalidStateError") {
-              console.error("Start error :", error);
-            }
+    let isMounted = true;
+
+    const startTimeout = setTimeout(() => {
+      if (isMounted && !isSpeakingRef.current && !isRecognizingRef.current) {
+        try {
+          recognition.start();
+        } catch (error) {
+          if (error.name !== "InvalidStateError") {
+            console.error("Start error :", error);
           }
         }
-      };
-
+      }
+    }, 1000);
+    if (SpeechRecognition) {
       recognition.onstart = () => {
         isRecognizingRef.current = true;
         setListening(true);
@@ -167,9 +169,35 @@ const Home = () => {
         isRecognizingRef.current = false;
         setListening(false);
 
-        if (!isSpeakingRef.current) {
+        if (isMounted && !isSpeakingRef.current) {
           setTimeout(() => {
-            safeRecognition();
+            if (isMounted) {
+              try {
+                recognition.start();
+                console.log("Recoginition requested!");
+              } catch (error) {
+                if (error.name !== "InvalidStateError") {
+                  console.error("Start error :", error);
+                }
+              }
+            }
+          }, 1000);
+        }
+      };
+      recognition.onerror = (event) => {
+        console.warn("Recognition error : ", event.error);
+        isRecognizingRef.current = false;
+        setListening(false);
+        if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
+          setTimeout(() => {
+            if (isMounted) {
+              try {
+                recognition.start();
+                console.log("Recognition restarted after error");
+              } catch (error) {
+                if (e.name !== "InvalidStateError") console.log(error);
+              }
+            }
           }, 1000);
         }
       };
@@ -193,20 +221,23 @@ const Home = () => {
         }
       };
 
-      const fallback = setInterval(() => {
-        if (!isSpeakingRef.current && !isRecognizingRef.current) {
-          safeRecognition();
-        }
-      }, 10000);
-      safeRecognition();
+      window.speechSynthesis.onvoicechanged = () => {
+        const greeting = new SpeechSynthesisUtterance(
+          `Hello ${userData.name}, how can I help you?`
+        );
+        greeting.lang = "hi-IN";
+        greeting.onend = () => {
+          startTimeout();
+        };
+        window.speechSynthesis.speak(greeting);
+      };
       return () => {
+        isMounted = false;
+        clearTimeout(startTimeout);
         recognition.stop();
         setListening(false);
         isRecognizingRef.current = false;
-        clearInterval(fallback);
       };
-    } else {
-      console.warn("SpeechRecognition is not supported in this browser.");
     }
   }, []);
 
